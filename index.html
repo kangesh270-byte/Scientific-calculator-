@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Scientific Calculator</title>
+<style>
+  :root{
+    --bg:#1b1d23;
+    --panel:#24262e;
+    --accent:#5b8cff;
+    --op:#3a3d49;
+    --text:#f2f3f5;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:var(--bg);
+    font-family:'Segoe UI',Roboto,Arial,sans-serif;
+  }
+  .calc{
+    width:360px;
+    background:var(--panel);
+    border-radius:16px;
+    padding:18px;
+    box-shadow:0 10px 30px rgba(0,0,0,.4);
+  }
+  .display{
+    background:#15161b;
+    color:var(--text);
+    border-radius:10px;
+    padding:16px;
+    margin-bottom:14px;
+    text-align:right;
+    min-height:70px;
+    word-wrap:break-word;
+  }
+  .display .expr{
+    font-size:13px;
+    color:#9aa0ab;
+    min-height:16px;
+  }
+  .display .result{
+    font-size:28px;
+    font-weight:600;
+  }
+  .mode-row{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:10px;
+  }
+  .mode-row button{
+    flex:1;
+    margin:0 3px;
+    padding:6px 0;
+    font-size:12px;
+    border:none;
+    border-radius:6px;
+    background:var(--op);
+    color:var(--text);
+    cursor:pointer;
+  }
+  .mode-row button.active{
+    background:var(--accent);
+  }
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:8px;
+  }
+  button{
+    border:none;
+    border-radius:10px;
+    padding:14px 0;
+    font-size:15px;
+    background:var(--op);
+    color:var(--text);
+    cursor:pointer;
+    transition:transform .05s;
+  }
+  button:active{
+    transform:scale(0.95);
+  }
+  button.num{background:#2d303a;}
+  button.op{background:var(--accent);}
+  button.eq{background:#2e8b57;grid-column:span 2;}
+  button.fn{font-size:13px;}
+  button.zero{grid-column:span 2;}
+  button.clear{background:#b04444;}
+</style>
+</head>
+<body>
+
+<div class="calc">
+  <div class="mode-row">
+    <button id="degBtn" class="active">DEG</button>
+    <button id="radBtn">RAD</button>
+    <button id="invBtn">INV</button>
+  </div>
+
+  <div class="display">
+    <div class="expr" id="expr"></div>
+    <div class="result" id="result">0</div>
+  </div>
+
+  <div class="grid">
+    <button class="fn" data-fn="sin">sin</button>
+    <button class="fn" data-fn="cos">cos</button>
+    <button class="fn" data-fn="tan">tan</button>
+    <button class="fn" data-fn="log">log</button>
+    <button class="fn" data-fn="ln">ln</button>
+
+    <button class="fn" data-fn="sqrt">√</button>
+    <button class="fn" data-fn="sq">x²</button>
+    <button class="fn" data-fn="pow">x^y</button>
+    <button class="fn" data-fn="fact">x!</button>
+    <button class="fn" data-fn="inv1x">1/x</button>
+
+    <button data-val="(" class="op">(</button>
+    <button data-val=")" class="op">)</button>
+    <button data-val="%" class="op">%</button>
+    <button id="backspace">⌫</button>
+    <button class="clear" id="clear">C</button>
+
+    <button class="num" data-val="7">7</button>
+    <button class="num" data-val="8">8</button>
+    <button class="num" data-val="9">9</button>
+    <button class="op" data-val="/">÷</button>
+    <button class="fn" data-fn="pi">π</button>
+
+    <button class="num" data-val="4">4</button>
+    <button class="num" data-val="5">5</button>
+    <button class="num" data-val="6">6</button>
+    <button class="op" data-val="*">×</button>
+    <button class="fn" data-fn="e">e</button>
+
+    <button class="num" data-val="1">1</button>
+    <button class="num" data-val="2">2</button>
+    <button class="num" data-val="3">3</button>
+    <button class="op" data-val="-">−</button>
+    <button class="fn" data-fn="exp">EXP</button>
+
+    <button class="num zero" data-val="0">0</button>
+    <button class="num" data-val=".">.</button>
+    <button class="op" data-val="+">+</button>
+    <button class="eq" id="equals">=</button>
+  </div>
+</div>
+
+<script>
+const exprEl = document.getElementById('expr');
+const resultEl = document.getElementById('result');
+let expr = "";
+let isDeg = true;
+let isInv = false;
+
+const degBtn = document.getElementById('degBtn');
+const radBtn = document.getElementById('radBtn');
+const invBtn = document.getElementById('invBtn');
+
+degBtn.onclick = () => { isDeg = true; degBtn.classList.add('active'); radBtn.classList.remove('active'); };
+radBtn.onclick = () => { isDeg = false; radBtn.classList.add('active'); degBtn.classList.remove('active'); };
+invBtn.onclick = () => { isInv = !isInv; invBtn.classList.toggle('active', isInv); };
+
+function updateDisplay(){
+  exprEl.textContent = expr;
+}
+
+function factorial(n){
+  if(n < 0 || Math.floor(n) !== n) return NaN;
+  if(n === 0 || n === 1) return 1;
+  let r = 1;
+  for(let i=2;i<=n;i++) r*=i;
+  return r;
+}
+
+function toRad(x){ return isDeg ? x * Math.PI / 180 : x; }
+function fromRad(x){ return isDeg ? x * 180 / Math.PI : x; }
+
+document.querySelectorAll('button[data-val]').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    expr += btn.getAttribute('data-val');
+    updateDisplay();
+  });
+});
+
+document.querySelectorAll('button[data-fn]').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const fn = btn.getAttribute('data-fn');
+    switch(fn){
+      case 'sin': expr += isInv ? "asin(" : "sin("; break;
+      case 'cos': expr += isInv ? "acos(" : "cos("; break;
+      case 'tan': expr += isInv ? "atan(" : "tan("; break;
+      case 'log': expr += "log10("; break;
+      case 'ln': expr += "log("; break;
+      case 'sqrt': expr += "sqrt("; break;
+      case 'sq': expr += "^2"; break;
+      case 'pow': expr += "^"; break;
+      case 'fact': expr += "!"; break;
+      case 'inv1x': expr = "1/(" + expr + ")"; break;
+      case 'pi': expr += "PI"; break;
+      case 'e': expr += "E"; break;
+      case 'exp': expr += "e"; break;
+    }
+    updateDisplay();
+  });
+});
+
+document.getElementById('clear').onclick = ()=>{
+  expr = "";
+  resultEl.textContent = "0";
+  updateDisplay();
+};
+
+document.getElementById('backspace').onclick = ()=>{
+  expr = expr.slice(0,-1);
+  updateDisplay();
+};
+
+document.getElementById('equals').onclick = ()=>{
+  try{
+    let safe = expr
+      .replace(/sin\(/g, "Math.sin(toRad(")
+      .replace(/cos\(/g, "Math.cos(toRad(")
+      .replace(/tan\(/g, "Math.tan(toRad(")
+      .replace(/asin\(/g, "fromRad(Math.asin(")
+      .replace(/acos\(/g, "fromRad(Math.acos(")
+      .replace(/atan\(/g, "fromRad(Math.atan(")
+      .replace(/log10\(/g, "Math.log10(")
+      .replace(/log\(/g, "Math.log(")
+      .replace(/sqrt\(/g, "Math.sqrt(")
+      .replace(/PI/g, "Math.PI")
+      .replace(/E/g, "Math.E")
+      .replace(/\^/g, "**");
+
+    // close extra parens added for sin/cos/tan/asin etc
+    let openCount = (safe.match(/\(/g)||[]).length;
+    let closeCount = (safe.match(/\)/g)||[]).length;
+    while(closeCount < openCount){ safe += ")"; closeCount++; }
+
+    // handle factorial !
+    safe = safe.replace(/(\d+(\.\d+)?)\!/g, "fact($1)");
+    safe = safe.replace(/fact/g, "factorial");
+
+    let val = Function('"use strict"; const toRad=' + toRad.toString() + '; const fromRad=' + fromRad.toString() + '; const factorial=' + factorial.toString() + '; return (' + safe + ')')();
+
+    if (typeof val === 'number' && !isNaN(val)) {
+      resultEl.textContent = Number(val.toFixed(10)).toString();
+    } else {
+      resultEl.textContent = "Error";
+    }
+  } catch(e){
+    resultEl.textContent = "Error";
+  }
+};
+
+document.addEventListener('keydown', (e)=>{
+  if(/[0-9+\-*/.()]/.test(e.key)){
+    expr += e.key;
+    updateDisplay();
+  } else if(e.key === "Enter"){
+    document.getElementById('equals').click();
+  } else if(e.key === "Backspace"){
+    expr = expr.slice(0,-1);
+    updateDisplay();
+  } else if(e.key === "Escape"){
+    document.getElementById('clear').click();
+  }
+});
+</script>
+
+</body>
+</html>
