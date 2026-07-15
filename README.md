@@ -11,7 +11,7 @@ A simple and user-friendly Scientific Calculator developed to perform basic and 
 * Square root
 * Power calculations
 * Trigonometric functions
-
+* 
   * Sin
   * Cos
   * Tan
