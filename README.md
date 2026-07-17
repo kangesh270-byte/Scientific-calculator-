@@ -1,5 +1,5 @@
 ﻿# 🧮 Scientific Calculator
-
+ 
 A simple and user-friendly Scientific Calculator developed to perform basic and advanced mathematical calculations.
 
 ## ✨ Features
